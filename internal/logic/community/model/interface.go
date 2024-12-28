@@ -3,22 +3,22 @@ package model
 import (
 	"context"
 
-	proto "github.com/Abhishekjha321/community_service/proto"
+	"github.com/Abhishekjha321/community_service/dto"
 	"github.com/Abhishekjha321/community_service/exceptions"
 	"github.com/Abhishekjha321/community_service/internal/common"
 	dbModel "github.com/Abhishekjha321/community_service/pkg/store/db/model"
 )
 
 type Service interface {
-	GetPosts(ctx context.Context, channelID string, userID string, limit int, currentPage int, sortBy string, bookMarksOnly bool) (*proto.ResponseGetPosts, *exceptions.Exception)
+	GetPosts(ctx context.Context, channelID string, userID string, limit int, currentPage int, sortBy string, bookMarksOnly bool) (*dto.ResponseGetPosts, *exceptions.Exception)
 	LikePost(ctx context.Context, postID string, action string, userID string, channelID string) *exceptions.Exception
 	DeletePost(ctx context.Context, postID string, userID string) *exceptions.Exception
-	CreatePost(ctx context.Context, requestBody *proto.RequestCreatePost, userId string) (*proto.ResponseCreatePost, *exceptions.Exception)
+	CreatePost(ctx context.Context, requestBody *dto.RequestCreatePost, userId string) (*dto.ResponseCreatePost, *exceptions.Exception)
 	ReportPost(ctx context.Context, requestBody *RequestReportPost, userId string) *exceptions.Exception
-	AllRepliesOnPost(ctx context.Context, postId string, userId string, channelID string, limit int, currentPage int, sortBy string) (*proto.ResponseAllRepliesOnPost, *exceptions.Exception)
+	AllRepliesOnPost(ctx context.Context, postId string, userId string, channelID string, limit int, currentPage int, sortBy string) (*dto.ResponseAllRepliesOnPost, *exceptions.Exception)
 	GetPostsCount(ctx context.Context, channelID string) (int64, *exceptions.Exception)
 	GetRepliesCount(ctx context.Context, postID string) (int64, *exceptions.Exception)
-	MarkAsRead(ctx context.Context, userID string, channelID string) (*proto.ResponseMarkNotificationsAsRead, *exceptions.Exception)
+	MarkAsRead(ctx context.Context, userID string, channelID string) (*dto.ResponseMarkNotificationsAsRead, *exceptions.Exception)
 	HasUserReadPost(ctx context.Context, userID string, channelID string) (bool, error)
 	GetUserPostsCount(ctx context.Context, channelID string, userID string, sortBy string) (int, *exceptions.Exception)
 	GetUserEventPosts(ctx context.Context, channelID string, limit int, currentPage int, userID string, offset int, sortBy string) ([]common.Post, *exceptions.Exception)

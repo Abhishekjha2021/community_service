@@ -1,4 +1,4 @@
-package proto
+package dto
 
 type RequestCreatePost struct {
 	ChannelID   string `json:"channel_id"`

@@ -20,9 +20,9 @@ import (
 
 	model "github.com/Abhishekjha321/community_service/internal/logic/community/model"
 
+	"github.com/Abhishekjha321/community_service/dto"
 	logger "github.com/Abhishekjha321/community_service/log"
 	dbModel "github.com/Abhishekjha321/community_service/pkg/store/db/model"
-	proto "github.com/Abhishekjha321/community_service/proto"
 )
 
 const (
@@ -42,8 +42,8 @@ type service struct {
 	// clients     *client.ClientImpl
 }
 
-func dereferencePostData(posts []*proto.ResponseGetPostsPostData) []proto.ResponseGetPostsPostData {
-	var result []proto.ResponseGetPostsPostData
+func dereferencePostData(posts []*dto.ResponseGetPostsPostData) []dto.ResponseGetPostsPostData {
+	var result []dto.ResponseGetPostsPostData
 	for _, post := range posts {
 		result = append(result, *post)
 	}
@@ -59,7 +59,7 @@ func NewService(repo model.Repo, redisClient cache.CacheBase) model.Service {
 	}
 }
 
-func (s *service) CreatePost(ctx context.Context, requestBody *proto.RequestCreatePost, userId string) (*proto.ResponseCreatePost, *exceptions.Exception) {
+func (s *service) CreatePost(ctx context.Context, requestBody *dto.RequestCreatePost, userId string) (*dto.ResponseCreatePost, *exceptions.Exception) {
 	log := logger.GetLogInstance(ctx, "CreatePost")
 
 	post := dbModel.Post{
@@ -92,7 +92,7 @@ func (s *service) CreatePost(ctx context.Context, requestBody *proto.RequestCrea
 			log.Errorf("[CreatePost] Error while fetching parent user ID, err: %s", err)
 			return nil, exceptions.GetExceptionByErrorCode(exceptions.SomethingWentWrongErrorCode)
 		}
-	
+
 		redisKey := fmt.Sprintf("community_comment_unread:%s:%s", parentUserID, requestBody.ChannelID)
 		expiration := 7 * 24 * time.Hour
 		KeyExpiryerr := s.redisClient.SetExpiringKey(ctx, redisKey, "true", expiration)
@@ -108,7 +108,7 @@ func (s *service) CreatePost(ctx context.Context, requestBody *proto.RequestCrea
 	if userDetails.LastName != "" {
 		userName += " " + userDetails.LastName
 	}
-	var result = &proto.ResponseCreatePostData{
+	var result = &dto.ResponseCreatePostData{
 		UserName:        userName,
 		UserPhone:       userDetails.UserPhone,
 		ProfileImageURL: userDetails.ProfileImageUrl,
@@ -122,7 +122,7 @@ func (s *service) CreatePost(ctx context.Context, requestBody *proto.RequestCrea
 		UpdatedAt:       fmt.Sprint(reply.UpdatedAt.Unix()),
 	}
 
-	return &proto.ResponseCreatePost{
+	return &dto.ResponseCreatePost{
 		Code:    APISuccessCode,
 		Message: APISuccessMessage,
 		Data:    *result,
@@ -167,10 +167,10 @@ func (s *service) GetUserEventPosts(ctx context.Context, ChannelID string, limit
 	return userPosts, nil
 }
 
-func (s *service) GetPosts(ctx context.Context, ChannelID string, userID string, limit int, currentPage int, sortBy string, bookMarksOnly bool) (*proto.ResponseGetPosts, *exceptions.Exception) {
+func (s *service) GetPosts(ctx context.Context, ChannelID string, userID string, limit int, currentPage int, sortBy string, bookMarksOnly bool) (*dto.ResponseGetPosts, *exceptions.Exception) {
 	var (
-		response      *proto.ResponseGetPosts
-		filteredPosts []*proto.ResponseGetPostsPostData
+		response      *dto.ResponseGetPosts
+		filteredPosts []*dto.ResponseGetPostsPostData
 		log           = logger.GetLogInstance(ctx, "GetPostsService")
 	)
 	userPostsCount, errUserPostsCount := s.GetUserPostsCount(ctx, ChannelID, userID, sortBy)
@@ -243,11 +243,11 @@ func (s *service) GetPosts(ctx context.Context, ChannelID string, userID string,
 	}
 
 	// Created maps to hold comments and replies
-	commentMap := make(map[int64]*proto.ResponseGetPostsPostData)
-	replyMap := make(map[int64][]*proto.ResponseGetPostsReply)
+	commentMap := make(map[int64]*dto.ResponseGetPostsPostData)
+	replyMap := make(map[int64][]*dto.ResponseGetPostsReply)
 
 	// Created a list to preserve order
-	var orderedComments []*proto.ResponseGetPostsPostData
+	var orderedComments []*dto.ResponseGetPostsPostData
 
 	for _, post := range posts {
 		if _, exists := commentMap[post.ID]; !exists {
@@ -268,7 +268,7 @@ func (s *service) GetPosts(ctx context.Context, ChannelID string, userID string,
 			if userDataMap[post.UserID].LastName != "" {
 				userName += " " + userDataMap[post.UserID].LastName
 			}
-			comment := &proto.ResponseGetPostsPostData{
+			comment := &dto.ResponseGetPostsPostData{
 				ID:            post.ID,
 				UserID:        post.UserID,
 				Avatar:        userDataMap[post.UserID].ProfileImageUrl,
@@ -304,7 +304,7 @@ func (s *service) GetPosts(ctx context.Context, ChannelID string, userID string,
 			if userDataMap[reply.UserID].LastName != "" {
 				userName += " " + userDataMap[reply.UserID].LastName
 			}
-			replyDetail := &proto.ResponseGetPostsReply{
+			replyDetail := &dto.ResponseGetPostsReply{
 				ID:        reply.ID,
 				UserID:    reply.UserID,
 				Avatar:    userDataMap[reply.UserID].ProfileImageUrl,
@@ -322,7 +322,7 @@ func (s *service) GetPosts(ctx context.Context, ChannelID string, userID string,
 			if replies, exists := replyMap[reply.ParentID]; exists {
 				replyMap[reply.ParentID] = append(replies, replyDetail)
 			} else {
-				replyMap[reply.ParentID] = []*proto.ResponseGetPostsReply{replyDetail}
+				replyMap[reply.ParentID] = []*dto.ResponseGetPostsReply{replyDetail}
 			}
 		}
 	}
@@ -346,7 +346,7 @@ func (s *service) GetPosts(ctx context.Context, ChannelID string, userID string,
 	}
 
 	for _, commentDetail := range orderedComments {
-		postWithReplies := proto.ResponseGetPostsPostData{
+		postWithReplies := dto.ResponseGetPostsPostData{
 			UserID:        commentDetail.UserID,
 			ID:            commentDetail.ID,
 			Avatar:        commentDetail.Avatar,
@@ -400,7 +400,7 @@ func (s *service) GetPosts(ctx context.Context, ChannelID string, userID string,
 
 	pagination := NewPagination(int64(currentPage), int64(limit), recordsCount)
 
-	return &proto.ResponseGetPosts{
+	return &dto.ResponseGetPosts{
 		Code:       APISuccessCode,
 		Message:    APISuccessMessage,
 		Data:       dereferencePostData(filteredPosts),
@@ -409,15 +409,15 @@ func (s *service) GetPosts(ctx context.Context, ChannelID string, userID string,
 
 }
 
-func dereferenceReplies(replies []*proto.ResponseGetPostsReply) []proto.ResponseGetPostsReply {
-	var result []proto.ResponseGetPostsReply
+func dereferenceReplies(replies []*dto.ResponseGetPostsReply) []dto.ResponseGetPostsReply {
+	var result []dto.ResponseGetPostsReply
 	for _, reply := range replies {
 		result = append(result, *reply)
 	}
 	return result
 }
 
-func NewPagination(currentPage, pageSize, totalRecordCount int64) *proto.ResponseGetPostsPagination {
+func NewPagination(currentPage, pageSize, totalRecordCount int64) *dto.ResponseGetPostsPagination {
 	totalPages := (totalRecordCount + pageSize - 1) / pageSize
 	var singlePageRecordCount int64
 
@@ -428,7 +428,7 @@ func NewPagination(currentPage, pageSize, totalRecordCount int64) *proto.Respons
 		singlePageRecordCount = pageSize
 	}
 
-	return &proto.ResponseGetPostsPagination{
+	return &dto.ResponseGetPostsPagination{
 		CurrentPage:           currentPage,
 		TotalPages:            totalPages,
 		SinglePageRecordCount: singlePageRecordCount,
@@ -504,9 +504,9 @@ func (s *service) GetRepliesCount(ctx context.Context, postID string) (int64, *e
 	return count, nil
 }
 
-func (s *service) AllRepliesOnPost(ctx context.Context, postId string, userId string, ChannelID string, limit int, currentPage int, sortBy string) (*proto.ResponseAllRepliesOnPost, *exceptions.Exception) {
+func (s *service) AllRepliesOnPost(ctx context.Context, postId string, userId string, ChannelID string, limit int, currentPage int, sortBy string) (*dto.ResponseAllRepliesOnPost, *exceptions.Exception) {
 	log := logger.GetLogInstance(ctx, "AllRepliesOnPost")
-	var allReplies []*proto.ResponseAllRepliesOnPostReplies
+	var allReplies []*dto.ResponseAllRepliesOnPostReplies
 	comment, err := s.repo.GetPostByPostId(ctx, postId)
 	if err != nil {
 		log.Error("failed to get post by post id: error: %w", err)
@@ -531,7 +531,7 @@ func (s *service) AllRepliesOnPost(ctx context.Context, postId string, userId st
 		return nil, exceptions.GetExceptionByErrorCode(exceptions.SomethingWentWrongErrorCode)
 	}
 
-	var response proto.ResponseAllRepliesOnPostData
+	var response dto.ResponseAllRepliesOnPostData
 
 	err = json.Unmarshal(byteData, &response)
 	if err != nil {
@@ -588,7 +588,7 @@ func (s *service) AllRepliesOnPost(ctx context.Context, postId string, userId st
 			userName += " " + reply.LastName
 		}
 
-		allReplies = append(allReplies, &proto.ResponseAllRepliesOnPostReplies{
+		allReplies = append(allReplies, &dto.ResponseAllRepliesOnPostReplies{
 			PostID:          fmt.Sprint(reply.ID),
 			UserName:        userName,
 			UserPhone:       reply.UserPhone,
@@ -603,7 +603,7 @@ func (s *service) AllRepliesOnPost(ctx context.Context, postId string, userId st
 			UpdatedAt:       reply.UpdatedAt,
 		})
 	}
-	var dereferencedReplies []proto.ResponseAllRepliesOnPostReplies
+	var dereferencedReplies []dto.ResponseAllRepliesOnPostReplies
 	for _, reply := range allReplies {
 		dereferencedReplies = append(dereferencedReplies, *reply)
 	}
@@ -617,11 +617,11 @@ func (s *service) AllRepliesOnPost(ctx context.Context, postId string, userId st
 
 	pagination := NewPagination(int64(currentPage), int64(limit), int64(repliesCount))
 
-	return &proto.ResponseAllRepliesOnPost{
+	return &dto.ResponseAllRepliesOnPost{
 		Code:    APISuccessCode,
 		Message: APISuccessMessage,
 		Data:    response,
-		Pagination: proto.ResponseAllRepliesOnPostPagination{
+		Pagination: dto.ResponseAllRepliesOnPostPagination{
 			CurrentPage:           pagination.CurrentPage,
 			TotalPages:            pagination.TotalPages,
 			SinglePageRecordCount: pagination.SinglePageRecordCount,
@@ -630,17 +630,17 @@ func (s *service) AllRepliesOnPost(ctx context.Context, postId string, userId st
 	}, nil
 }
 
-func (s *service) MarkAsRead(ctx context.Context, userID string, ChannelID string) (*proto.ResponseMarkNotificationsAsRead, *exceptions.Exception) {
+func (s *service) MarkAsRead(ctx context.Context, userID string, ChannelID string) (*dto.ResponseMarkNotificationsAsRead, *exceptions.Exception) {
 
 	isRead, err := s.HasUserReadPost(ctx, userID, ChannelID)
 	if err != nil {
-		return &proto.ResponseMarkNotificationsAsRead{}, exceptions.GetExceptionByErrorCode(exceptions.QueryFailedErrorCode)
+		return &dto.ResponseMarkNotificationsAsRead{}, exceptions.GetExceptionByErrorCode(exceptions.QueryFailedErrorCode)
 	}
 
-	return &proto.ResponseMarkNotificationsAsRead{
+	return &dto.ResponseMarkNotificationsAsRead{
 		Code:    APISuccessCode,
 		Message: APISuccessMessage,
-		Data: proto.ResponseMarkNotificationsAsReadData{
+		Data: dto.ResponseMarkNotificationsAsReadData{
 			IsUnread: isRead,
 		},
 	}, nil

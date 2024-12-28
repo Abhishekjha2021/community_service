@@ -3,12 +3,11 @@ package api
 import (
 	"strconv"
 	"strings"
-
+	"github.com/Abhishekjha321/community_service/dto"
 	"github.com/Abhishekjha321/community_service/exceptions"
 	"github.com/Abhishekjha321/community_service/internal/common"
 	"github.com/Abhishekjha321/community_service/internal/logic/community/model"
 	logger "github.com/Abhishekjha321/community_service/log"
-	proto "github.com/Abhishekjha321/community_service/proto" 
 	"github.com/gin-gonic/gin"
 )
 
@@ -37,16 +36,6 @@ type communityController struct {
 	communityService model.Service
 }
 
-type CommunityController interface {
-	CreatePost(ctx *gin.Context)
-	GetPosts(ctx *gin.Context)
-	LikePost(ctx *gin.Context)
-	DeletePost(ctx *gin.Context)
-	ReportPost(ctx *gin.Context)
-	AllRepliesOnPost(ctx *gin.Context)
-	MarkNotificationsAsRead(ctx *gin.Context)
-}
-
 func NewCommunityController(communityService model.Service) CommunityController {
 	return &communityController{
 		communityService: communityService,
@@ -56,7 +45,7 @@ func NewCommunityController(communityService model.Service) CommunityController 
 func (c *communityController) CreatePost(ctx *gin.Context) {
 
 	var (
-		requestCreatePost proto.RequestCreatePost
+		requestCreatePost dto.RequestCreatePost
 	)
 
 	log := logger.GetLogInstance(ctx, "CreatePost")
