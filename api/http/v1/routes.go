@@ -3,15 +3,28 @@ package api
 import (
 	"net/http"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"time"
 )
 
 const (
-	PublicApiV1PathPrefix      = "/community/v1"
-	PrivateApiV1PathPrefix     = "/private/community/v1"
+	PublicApiV1PathPrefix  = "/community/v1"
+	PrivateApiV1PathPrefix = "/private/community/v1"
 )
 
 func AddPublicRoutes(router *gin.Engine, communityController CommunityController) {
+	// Apply CORS middleware
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:5174"}, // Frontend URL
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
+
+	// Public API routes
 	v1Public := router.Group(PublicApiV1PathPrefix)
 	{
 		v1Public.GET("/health", func(ctx *gin.Context) {
@@ -28,7 +41,7 @@ func AddPublicRoutes(router *gin.Engine, communityController CommunityController
 }
 
 func AddPrivateRoutes(router *gin.Engine, communityController CommunityController) {
-	// add internal apis here
+	// Private API routes
 	v1Private := router.Group(PrivateApiV1PathPrefix)
 	{
 		v1Private.GET("/health", func(ctx *gin.Context) {
