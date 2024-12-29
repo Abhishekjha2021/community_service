@@ -6,6 +6,8 @@ import (
 	"time"
 
 	logger "github.com/Abhishekjha321/community_service/log"
+	"github.com/gin-contrib/cors"
+
 	// metrics "bitbucket.org/kellyx/common-lib/prometheus"
 	// "bitbucket.org/kellyx/common-lib/rabbitmq"
 	"github.com/Abhishekjha321/community_service/storage/cache" // write this code locally
@@ -71,14 +73,36 @@ func (a *Application) initControllers() {
 	a.controller.communityController = api.NewCommunityController(a.services.communityService)
 }
 
+// func (a *Application) setUpHandlers() *gin.Engine {
+// 	router := gin.Default()
+// 	router.Use(otelgin.Middleware(config.Config.Name))
+// 	api.AddPublicRoutes(router, a.controller.communityController)
+// 	api.AddPrivateRoutes(router, a.controller.communityController)
+// 	return router
+// }
+
 func (a *Application) setUpHandlers() *gin.Engine {
 	router := gin.Default()
+
+	// Apply CORS middleware globally
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:5173"}, // Frontend URL
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
+
+	// Set up OpenTelemetry middleware
 	router.Use(otelgin.Middleware(config.Config.Name))
+
+	// Add public and private routes
 	api.AddPublicRoutes(router, a.controller.communityController)
 	api.AddPrivateRoutes(router, a.controller.communityController)
+
 	return router
 }
-
 
 func (a *Application) Init() {
 	// a.initClients()
