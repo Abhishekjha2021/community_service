@@ -79,21 +79,6 @@ func (a *Application) setUpHandlers() *gin.Engine {
 	return router
 }
 
-// func (a *Application) initTelemetry() {
-// 	telemetry.InitRouteTracing(a.router, config.Config.Name)
-// }
-
-// func (a *Application) initPublishers() {
-
-// }
-
-// type MessageConsumer func([]byte) error
-
-// func (a *Application) initConsumers() {
-// 	// communityServiceRMQ := rabbitmq.New(config.Config.RabbitMQConfig)
-
-// 	go rabbitmq.QueueBindAndConsumerSetUp(communityServiceRMQ, config.Config.UserInfoRequestConsumerConfig, a.services.consumerService.UserInfoConsumer, false)
-// }
 
 func (a *Application) Init() {
 	// a.initClients()
