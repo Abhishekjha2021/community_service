@@ -39,44 +39,6 @@ func NewRepo(db *db.Store) model.Repo {
 	}
 }
 
-// func (r *repo) GetReportCategoriesData(ctx context.Context) ([]model.ReportResponse, error) {
-// 	log := logger.GetLogInstance(ctx, "GetReportCategoriesData")
-// 	var result []model.ReportResponse
-// 	err := r.db.MasterDB.WithContext(ctx).Raw(
-// 		`Select parent_reports.id as parent_id,
-// 		parent_reports.title as parent_title,
-// 		parent_reports.topic as parent_topic,
-// 		parent_reports.subtitle as parent_subtitle,
-// 		child_reports.id as child_id,
-// 		child_reports.title as child_title,
-// 		child_reports.topic as child_topic,
-// 		child_reports.subtitle as child_subtitle
-// 	from
-// 		master_reports as parent_reports
-// 	left join master_reports as child_reports on
-// 		child_reports.parent_id = parent_reports.id
-// 	where
-// 		parent_reports.id in (select id from master_reports where parent_id = 0)`).Find(&result).Error
-// 	if err != nil {
-// 		log.Errorf("[GetReportCategoriesData] Error while retreiving data from db with error: %v", err)
-// 		return nil, err
-// 	}
-
-// 	return result, nil
-// }
-
-// func (r *repo) GetEventPostEngagementData(ctx context.Context, channelID string) (*model.LikeCommentCountOnChannel, error) {
-// 	log := logger.GetLogInstance(ctx, "GetEventPostEngagementData")
-// 	var result model.LikeCommentCountOnChannel
-// 	err := r.db.MasterDB.WithContext(ctx).Table(postsTable).Select("COUNT(*) as comment_count, SUM(like_count) as like_count").Where("channel_id = ?", channelID).Find(&result).Error
-// 	if err != nil {
-// 		log.Errorf("[GetEventPostEngagementDataRepo] Error while retreiving data from db with error: %v for channelID: %s", err, channelID)
-// 		return nil, err
-// 	}
-
-// 	return &result, nil
-// }
-
 func (r *repo) GetUserIDByPostID(ctx context.Context, postID int64) (string, error) {
 	log := logger.GetLogInstance(ctx, "GetUserIDByPostID-repo")
 

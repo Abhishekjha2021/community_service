@@ -15,7 +15,6 @@ import (
 	"github.com/Abhishekjha321/community_service/storage/cache"
 	"github.com/go-redis/redis"
 
-	// "github.com/go-redis/redis/v8"
 	"gorm.io/gorm"
 
 	model "github.com/Abhishekjha321/community_service/internal/logic/community/model"

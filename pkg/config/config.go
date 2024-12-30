@@ -7,9 +7,7 @@ import (
 	"time"
 
 	"github.com/Abhishekjha321/community_service/log"
-	// "bitbucket.org/kellyx/common-lib/rabbitmq"
 	"github.com/Abhishekjha321/community_service/storage/db/postgres"
-	// "bitbucket.org/kellyx/common-lib/telemetry"
 	"github.com/spf13/viper"
 )
 
@@ -30,12 +28,6 @@ type Server struct {
 	Port int
 }
 
-// type NotificationConfig struct {
-// 	Scheme   string
-// 	HostName string
-// 	Timeout  int64
-// }
-
 var Config = &struct {
 	Name                     string
 	AppEnv                   string
@@ -46,9 +38,6 @@ var Config = &struct {
 	PostgresSlave            *postgres.PGSlave
 	Logger                   Logger
 	RedisConfig              RedisConfig
-	// RabbitMQConfig           rabbitmq.Config
-	// NotificationConfig            *NotificationConfig
-	// UserInfoRequestConsumerConfig rabbitmq.ConsumerConfig
 	UserInfoDelay time.Duration
 }{}
 
